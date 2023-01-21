@@ -41,7 +41,6 @@ class Sudoku():
             if not isinstance(value, (int)):
                   raise TypeError("Error: Cell value must be a number.")
             self.sudokuArray[row][col] = value
-            print(self.sudokuArray)
             return
 
       def restartSudokuTable(self):
@@ -49,8 +48,6 @@ class Sudoku():
             Restart Sudoku, copy from basic Matrix.
             '''
             self.sudokuArray = np.copy(self.basicSudokuArray)
-            print(self.sudokuArray)
-
 
       def __getSudokuFromFile(difficulty):
             '''
@@ -181,9 +178,7 @@ class Sudoku():
             for i in range(0, 3):
                   for j in range(0, 3):
                         if self.sudokuArray[i + (modRow * 3)][j + (modCol * 3)] == num:
-                              print(i + (modRow * 3), i + (modCol * 3), num)
                               if temprow//3 != modRow and tempcol//3 != modCol:
-                                    print("Blad here")
                                     return False
             
             return True
@@ -227,12 +222,12 @@ class Sudoku():
             Checks if we can enter a number in a given position in the main matrix.
             Checks by row and column.
             '''
-            for tempcol in range(len(self.basicSudokuArray)):
-                  if self.basicSudokuArray[row][tempcol] == num and tempcol != col:
+            for tempcol in range(len(self.sudokuArray)):
+                  if self.sudokuArray[row][tempcol] == num and tempcol != col:
                         return False
 
-            for temprow in range(len(self.basicSudokuArray)):
-                  if self.basicSudokuArray[temprow][col] == num and temprow != row:
+            for temprow in range(len(self.sudokuArray)):
+                  if self.sudokuArray[temprow][col] == num and temprow != row:
                         return False
             
             return True
@@ -257,7 +252,8 @@ class Sudoku():
             for row in range(len(self.sudokuArray)):
                   for col in range(len(self.sudokuArray[row])):
                         if self.checkSudokuPositionMainTable(self.sudokuArray[row][col], row, col) != True:
-                              errors.append((row, col))
+                              if self.basicSudokuArray[row][col] == 0:
+                                    errors.append((row, col))
             
             return errors
 

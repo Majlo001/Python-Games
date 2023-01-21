@@ -1,6 +1,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import pyqtSignal, QObject, Qt, QThread
-from PyQt5.QtWidgets import QMainWindow, QDialog, QPushButton, QMessageBox, QLabel, QDialogButtonBox, QTableWidget, QTableWidgetItem, QVBoxLayout
+from PyQt5.QtWidgets import QMainWindow, QDialog, QPushButton, QMessageBox, QLabel, QTableWidget, QTableWidgetItem
 from PyQt5.QtGui import QIcon, QFont
 from PyQt5.uic import loadUi
 import sys
@@ -15,8 +15,6 @@ UI_PATH = 'ui_files\\'
 ICON_PATH = 'Sudoku\\media\\icons\\'
 #TODO:Wszystkie globalne do PythonSettings
 
-
-            
 
 class SudokuMainWindow(QMainWindow):
       def __init__(self, isGenerate, difficulty):
@@ -67,9 +65,13 @@ class SudokuMainWindow(QMainWindow):
 
             # Show The App
             self.show()
+
       
 
       def createSudokuTable(self):
+            '''
+            Creating Sudoku table form Matrix and puting numbers to cells
+            '''
             row = 0
             col = 0
             for arr in self.sudokuArray:
@@ -85,11 +87,17 @@ class SudokuMainWindow(QMainWindow):
                   col = 0
 
       def clearSudokuTable(self):
+            '''
+            Clearing sudoku Table after clicking a button
+            '''
             self.sudokuArray = np.copy(self.basicSudokuArray)
             self.sudokuObject.restartSudokuTable()
             self.createSudokuTable()
 
       def checkSudokuTable(self):
+            '''
+            Checking Sudoku Table after clicking a button
+            '''
             if self.sudokuObject.findEmptySpacesMainTable() == False:
                   self.timer.stopTimer()
                   if self.sudokuObject.validateSudoku() == True:
@@ -102,12 +110,18 @@ class SudokuMainWindow(QMainWindow):
                         
                         self.__showSudokuDialog(len(errorlist))
             else:
-                  print(self.sudokuObject.findEmptySpacesMainTable())
+                  self.showInformationDialog("You must enter numbers to all cells")
       
       def __setCellError(self, row, col):
+            '''
+            Setting red background in error cell
+            '''
             self.sudokuTable.item(row, col).setBackground(QtGui.QColor(255, 0, 0))
 
       def __showSudokuDialog(self, errors):
+            '''
+            Showing Sudoku Dialog with check function result
+            '''
             dialog = SudokuResultDialog(errors, self.timerLabel.text())
             if dialog.exec_() == QDialog.Accepted:
                   SudokuMainWindow(self.isGenerate, self.difficulty)
@@ -116,9 +130,15 @@ class SudokuMainWindow(QMainWindow):
                   self.close()
       
       def updateTimerLabel(self, value):
+            '''
+            Updating timer text from thread
+            '''
             self.timerLabel.setText(value)
 
       def sudokuCellChanged(self, item):
+            '''
+            Validating is it possible to change cell, if yes, then change.
+            '''
             if int(self.basicSudokuArray[item.row(), item.column()]) == 0:
                   if item.text() == "":
                         self.sudokuObject.updateSudokuArray(item.row(), item.column(), 0)
@@ -128,19 +148,34 @@ class SudokuMainWindow(QMainWindow):
                         if int(item.text()) > 9 or int(item.text()) < 1:
                               self.sudokuTable.item(item.row(), item.column()).setText("")
                               self.sudokuObject.updateSudokuArray(item.row(), item.column(), 0)
-                              # TODO: Modal tutaj - liczby z zakresu 1-9
+                              self.showInformationDialog("You can only enter numbers in a range 1-9")
                         else:
                               self.sudokuTable.item(item.row(), item.column()).setTextAlignment(Qt.AlignHCenter|Qt.AlignVCenter)
                               self.sudokuObject.updateSudokuArray(item.row(), item.column(), int(item.text()))
                   else:
                         self.sudokuTable.item(item.row(), item.column()).setText("")
                         self.sudokuObject.updateSudokuArray(item.row(), item.column(), 0)
+                        self.showInformationDialog("You can only enter numbers in a range 1-9")
             else:
                   if item.text() == str(self.basicSudokuArray[item.row(), item.column()]):
                         return
-                  # TODO: Modal tutaj - Tylko liczby z zakresu 1-9
+
+                  self.showInformationDialog("You can not change this cell")
                   self.sudokuTable.item(item.row(), item.column()).setText(str(self.basicSudokuArray[item.row(), item.column()]))
 
+      def showInformationDialog(self, message):
+            '''
+            Showing Informational Dialog with given message
+            '''
+            msgBox = QMessageBox()
+            msgBox.setIcon(QMessageBox.Information)
+            msgBox.setText(message)
+            msgBox.setWindowTitle("Sudoku Information")
+            msgBox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+
+            returnValue = msgBox.exec()
+            if returnValue == QMessageBox.Ok:
+                  pass
 
 
 

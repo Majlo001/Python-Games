@@ -1,7 +1,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import pyqtSignal, QObject, Qt, QTimer, QTime, QThread
-from PyQt5.QtWidgets import QMainWindow, QDialog, QPushButton, QMessageBox, QLabel, QDialogButtonBox, QTableWidget, QTableWidgetItem
-from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import pyqtSignal, QObject, Qt, QThread
+from PyQt5.QtWidgets import QMainWindow, QDialog, QPushButton, QMessageBox, QLabel, QDialogButtonBox, QTableWidget, QTableWidgetItem, QVBoxLayout
+from PyQt5.QtGui import QIcon, QFont
 from PyQt5.uic import loadUi
 import sys
 
@@ -9,18 +9,20 @@ import numpy as np
 
 from Sudoku.SudokuGame import *
 from Sudoku.Timer import *
+from Sudoku.SudokuResultDialog import *
 
 UI_PATH = 'ui_files\\'
 ICON_PATH = 'Sudoku\\media\\icons\\'
 #TODO:Wszystkie globalne do PythonSettings
 
 
-class Ui_MainWindow(QMainWindow):
-      def __init__(self):
+            
+
+class SudokuMainWindow(QMainWindow):
+      def __init__(self, isGenerate, difficulty):
             super().__init__()
-            self.editItemWindow = None
-            self.isEditItemOpen = False
-            self.difficulty = "normal"
+            self.difficulty = difficulty
+            self.isGenerate = isGenerate
             
             # Load the ui file
             self.ui = loadUi(UI_PATH+"sudoku_game.ui", self)
@@ -53,14 +55,14 @@ class Ui_MainWindow(QMainWindow):
 
 
             # Create Sudoku Table
-            self.sudokuObject = Sudoku(1, self.difficulty)
-            self.basicSudokuArray = self.sudokuObject.getSudokuArray()
+            self.sudokuObject = Sudoku(self.isGenerate, self.difficulty)
+            self.basicSudokuArray = self.sudokuObject.getBasicSudokuArray()
             self.sudokuArray = np.copy(self.basicSudokuArray)
             self.createSudokuTable()
             
 
             # Change cell
-            self.sudokuTable.itemChanged.connect(self.sudoku_cell_changed)
+            self.sudokuTable.itemChanged.connect(self.sudokuCellChanged)
             
 
             # Show The App
@@ -84,34 +86,59 @@ class Ui_MainWindow(QMainWindow):
 
       def clearSudokuTable(self):
             self.sudokuArray = np.copy(self.basicSudokuArray)
+            self.sudokuObject.restartSudokuTable()
             self.createSudokuTable()
 
       def checkSudokuTable(self):
-            print("check")
-            self.timer.stopTimer()
-            #TODO: Check table valid
+            if self.sudokuObject.findEmptySpacesMainTable() == False:
+                  self.timer.stopTimer()
+                  if self.sudokuObject.validateSudoku() == True:
+                        self.__showSudokuDialog(0)
+                  else:
+                        errorlist = self.sudokuObject.getValidateErrors()
+                        for i in range(len(errorlist)):
+                              row, col = errorlist[i]
+                              self.__setCellError(row, col)
+                        
+                        self.__showSudokuDialog(len(errorlist))
+            else:
+                  print(self.sudokuObject.findEmptySpacesMainTable())
+      
+      def __setCellError(self, row, col):
+            self.sudokuTable.item(row, col).setBackground(QtGui.QColor(255, 0, 0))
+
+      def __showSudokuDialog(self, errors):
+            dialog = SudokuResultDialog(errors, self.timerLabel.text())
+            if dialog.exec_() == QDialog.Accepted:
+                  SudokuMainWindow(self.isGenerate, self.difficulty)
+                  self.close()
+            else:
+                  self.close()
       
       def updateTimerLabel(self, value):
             self.timerLabel.setText(value)
 
-      def sudoku_cell_changed(self, item):
+      def sudokuCellChanged(self, item):
             if int(self.basicSudokuArray[item.row(), item.column()]) == 0:
                   if item.text() == "":
+                        self.sudokuObject.updateSudokuArray(item.row(), item.column(), 0)
                         return
+
                   if item.text().isdigit():
-                        #print(item.row(), item.column(), item.text())
                         if int(item.text()) > 9 or int(item.text()) < 1:
                               self.sudokuTable.item(item.row(), item.column()).setText("")
+                              self.sudokuObject.updateSudokuArray(item.row(), item.column(), 0)
                               # TODO: Modal tutaj - liczby z zakresu 1-9
                         else:
                               self.sudokuTable.item(item.row(), item.column()).setTextAlignment(Qt.AlignHCenter|Qt.AlignVCenter)
+                              self.sudokuObject.updateSudokuArray(item.row(), item.column(), int(item.text()))
                   else:
                         self.sudokuTable.item(item.row(), item.column()).setText("")
+                        self.sudokuObject.updateSudokuArray(item.row(), item.column(), 0)
             else:
                   if item.text() == str(self.basicSudokuArray[item.row(), item.column()]):
                         return
                   # TODO: Modal tutaj - Tylko liczby z zakresu 1-9
-                  #print(item.row(), item.column(), item.text())
                   self.sudokuTable.item(item.row(), item.column()).setText(str(self.basicSudokuArray[item.row(), item.column()]))
 
 
@@ -119,5 +146,5 @@ class Ui_MainWindow(QMainWindow):
 
 
 app = QtWidgets.QApplication(sys.argv)
-ui = Ui_MainWindow()
+ui = SudokuMainWindow(1, "easy")
 sys.exit(app.exec_())

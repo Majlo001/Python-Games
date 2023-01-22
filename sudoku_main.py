@@ -66,6 +66,12 @@ class SudokuMainWindow(QMainWindow):
             # Show The App
             self.show()
 
+      def closeEvent(self, event):
+            print("exit")
+            self.timer.stopTimer()
+            self.thread.exit()
+            event.accept()
+
       
 
       def createSudokuTable(self):
@@ -180,6 +186,6 @@ class SudokuMainWindow(QMainWindow):
 
 
 
-app = QtWidgets.QApplication(sys.argv)
-ui = SudokuMainWindow(1, "easy")
-sys.exit(app.exec_())
+# app = QtWidgets.QApplication(sys.argv)
+# ui = SudokuMainWindow(1, "easy")
+# sys.exit(app.exec_())

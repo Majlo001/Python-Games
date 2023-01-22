@@ -6,7 +6,6 @@ from .SudokuSettings import *
 
 class Sudoku():
       def __init__(self, x, difficulty):
-            self.gameLoaded = False
             self.sudokuArray = np.zeros([9,9], dtype = int)
 
             if x == 1:
@@ -15,7 +14,7 @@ class Sudoku():
                   self.__generateEmptySpaces(difficulty)
                   self.sudokuArray = np.copy(self.basicSudokuArray)
             elif x == 2:
-                  self.basicSudokuArray = self.__getSudokuFromFile(difficulty)
+                  self.basicSudokuArray = self.getSudokuFromFile(difficulty)
                   self.sudokuArray = np.copy(self.basicSudokuArray)
             else:
                   #TODO: Solve and enter
@@ -49,12 +48,12 @@ class Sudoku():
             '''
             self.sudokuArray = np.copy(self.basicSudokuArray)
 
-      def __getSudokuFromFile(difficulty):
+      def getSudokuFromFile(self, difficulty):
             '''
             Opens JSON file and return Sudoku Matrix depend on difficulty
             '''
 
-            f = open('sudoku.json') #TODO: To settings
+            f = open('Sudoku\\sudoku.json') #TODO: To settings
             data = json.load(f)
             retSudoku = np.zeros([0,0], dtype = int)
 

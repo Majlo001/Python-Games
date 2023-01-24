@@ -1,7 +1,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import pyqtSignal, QObject
-from PyQt5.QtWidgets import QMainWindow, QDialog, QPushButton, QComboBox, QLabel, QCheckBox
-from PyQt5.QtGui import QIcon, QFont, QPixmap
+from PyQt5.QtWidgets import QMainWindow, QPushButton, QComboBox, QLabel, QCheckBox
+from PyQt5.QtGui import QPixmap
 from PyQt5.uic import loadUi
 import sys
 
@@ -10,7 +9,7 @@ import sudoku_solver
 
 UI_PATH = 'ui_files\\'
 IMAGES_PATH = 'images\\'
-#TODO:Wszystkie globalne do PythonSettings
+
 
 
 class MainWindow(QMainWindow):
@@ -24,7 +23,6 @@ class MainWindow(QMainWindow):
             # Define widgets
             self.sudokuPlayButton = self.findChild(QPushButton, "playButton")
             self.sudkouTryButton = self.findChild(QPushButton, "tryButton")
-            #self.conncet4PlayButton = self.findChild(QPushButton, "conncet4PlayButton")
             self.difficultyComboBox = self.findChild(QComboBox, "difficultyComboBox")
             self.boardComboBox = self.findChild(QComboBox, "boardComboBox")
             self.image1 = self.findChild(QLabel, "image1")
@@ -51,6 +49,9 @@ class MainWindow(QMainWindow):
             self.show()
 
     def playSudoku(self):
+        '''
+        Opening new window with Sudoku Game with given settings.
+        '''
         difficulty = self.difficultyComboBox.currentText()
         board = self.boardComboBox.currentText()
         showErrors = self.errorsCheckBox.isChecked()
@@ -60,9 +61,11 @@ class MainWindow(QMainWindow):
             gMode = 2
         
         sudoku_main.SudokuMainWindow(gMode, difficulty.lower(), showErrors)
-    
 
     def solveSudoku(self):
+        '''
+        Opening new window with Sudoku Solver
+        '''
         sudoku_solver.SudokuSolver()
 
 

@@ -203,27 +203,6 @@ class Sudoku():
 
             return False
       
-      def generateRest(self):
-            '''
-            Generate rest of the matrix
-            '''
-            print(self.sudokuArray)
-            for row in range(len(self.sudokuArray)):
-                  for col in range(len(self.sudokuArray[row])):
-                        if self.sudokuArray[row][col] == 0:
-                              randNum = random.randint(1, 9)
-
-                              if self.checkSpaceMainTable(randNum, row, col):
-                                    print(row, col, randNum)
-                                    self.sudokuArray[row][col] = randNum
-                                    
-                                    if self.solveMainTable() == False:
-                                          print("False")
-                                          self.sudokuArray[row][col] = 0
-
-            print(self.sudokuArray)
-            return False
-
       def checkSudokuPosition(self, num, row, col):
             '''
             Checks if we can enter a number in a given position in the matrix.
@@ -322,8 +301,8 @@ class Sudoku():
 
             row, col = spacesAvailable
 
-            for num in range(1,10):
-                  if self.is_valid(num, row, col):
+            for num in range(1, 10):
+                  if self.checkSpaceMainTable(num, row, col):
                         self.sudokuArray[row][col] = num
 
                         if self.solveSudoku():
@@ -346,12 +325,12 @@ class Sudoku():
 
             for n in range(1, 10):
                   if self.checkSpaceMainTable(n, row, col):
-                        self.basicSudokuArray[row][col] = n
+                        self.sudokuArray[row][col] = n
                         
                         if self.solveMainTable():
                               return True
                         
-                        self.basicSudokuArray[row][col] = 0
+                  self.sudokuArray[row][col] = 0
 
             return False
 

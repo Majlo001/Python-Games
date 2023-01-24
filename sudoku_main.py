@@ -1,7 +1,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import pyqtSignal, QObject, Qt, QThread
+from PyQt5.QtCore import Qt, QThread
 from PyQt5.QtWidgets import QMainWindow, QDialog, QPushButton, QMessageBox, QLabel, QTableWidget, QTableWidgetItem
-from PyQt5.QtGui import QIcon, QFont
+from PyQt5.QtGui import QIcon
 from PyQt5.uic import loadUi
 import sys
 
@@ -22,6 +22,8 @@ class SudokuMainWindow(QMainWindow):
             self.difficulty = difficulty
             self.isGenerate = isGenerate
             self.showErrors = showErrors
+
+            self.__isPaused = False
             
             # Load the ui file
             self.ui = loadUi(UI_PATH+"sudoku_game.ui", self)
@@ -46,11 +48,13 @@ class SudokuMainWindow(QMainWindow):
             self.difficultyLabel.setText(self.difficulty.upper())
             self.timerLabel.setText("00:00:00")
             self.pauseButton.setText("")
-            self.pauseButton.setIcon(QIcon(ICON_PATH + "circled-play-60.png"))
+            self.pauseButton.setIcon(QIcon(ICON_PATH + "pause-button-60.png"))
+            self.pauseButton.setIconSize(QtCore.QSize(36,36))
 
             # Click buttons
             self.clearButton.clicked.connect(self.clearSudokuTable)
             self.checkButton.clicked.connect(self.checkSudokuTable)
+            self.pauseButton.clicked.connect(self.__pauseGame)
 
 
             # Create Sudoku Table
@@ -67,13 +71,52 @@ class SudokuMainWindow(QMainWindow):
             # Show The App
             self.show()
 
+      def __pauseGame(self):
+            '''
+            Pausing game with hiding and showing numbers
+            '''
+            if self.__isPaused == True:
+                  self.__isPaused = False
+                  self.difficultyLabel.setText(self.difficulty.upper())
+                  self.pauseButton.setIcon(QIcon(ICON_PATH + "pause-button-60.png"))
+                  self.pauseButton.setIconSize(QtCore.QSize(36,36))
+                  self.timer.playTimer()
+                  self.__showSudokuTable()
+            else:
+                  self.__isPaused = True
+                  self.difficultyLabel.setText("GAME PAUSED")
+                  self.pauseButton.setIcon(QIcon(ICON_PATH + "circled-play-60.png"))
+                  self.pauseButton.setIconSize(QtCore.QSize(36,36))
+                  self.timer.stopTimer()
+                  self.__hideSudokuTable()
+
+      def __hideSudokuTable(self):
+            '''
+            Hiding numbers in Sudoku while game is paused.
+            '''
+            for row in range(len(self.sudokuArray)):
+                  for col in range(len(self.sudokuArray[row])):
+                        self.sudokuTable.item(row, col).setText("")
+                        self.__setCellNormal(row, col)
+
+      def __showSudokuTable(self):
+            '''
+            showing numbers in Sudoku when game is unpaused.
+            '''
+            self.sudokuArray = self.sudokuObject.getSudokuArray()
+            for row in range(len(self.sudokuArray)):
+                  for col in range(len(self.sudokuArray[row])):
+                        self.sudokuTable.item(row, col).setText(str(self.sudokuArray[row][col]))
+                        self.__setCellNormal(row, col)
+
+                        if self.basicSudokuArray[row][col] != 0:
+                              self.sudokuTable.item(row, col).setBackground(QtGui.QColor(220,220,220))
+
+
       def closeEvent(self, event):
-            print("exit")
             self.timer.stopTimer()
             self.thread.exit()
             event.accept()
-
-      
 
       def createSudokuTable(self):
             '''
@@ -127,7 +170,7 @@ class SudokuMainWindow(QMainWindow):
 
       def __setCellNormal(self, row, col):
             '''
-            Setting white background in error cell
+            Setting white background in normal cell
             '''
             self.sudokuTable.item(row, col).setBackground(QtGui.QColor(255, 255, 255))
 
@@ -152,45 +195,43 @@ class SudokuMainWindow(QMainWindow):
             '''
             Validating is it possible to change cell, if yes, then change.
             '''
-            if int(self.basicSudokuArray[item.row(), item.column()]) == 0:
-                  if item.text() == "":
-                        self.sudokuObject.updateSudokuArray(item.row(), item.column(), 0)
-                        self.__setCellNormal(item.row(), item.column())
-                        return
+            if self.__isPaused != True:
+                  if int(self.basicSudokuArray[item.row(), item.column()]) == 0:
+                        if item.text() == "" or item.text() == "0":
+                              self.sudokuTable.item(item.row(), item.column()).setText("")
+                              self.sudokuObject.updateSudokuArray(item.row(), item.column(), 0)
+                              self.__setCellNormal(item.row(), item.column())
+                              return
 
-                  if item.text().isdigit():
-                        if int(item.text()) > 9 or int(item.text()) < 1:
+                        if item.text().isdigit():
+                              if int(item.text()) > 9 or int(item.text()) < 1:
+                                    self.sudokuTable.item(item.row(), item.column()).setText("")
+                                    self.sudokuObject.updateSudokuArray(item.row(), item.column(), 0)
+                                    self.showInformationDialog("You can only enter numbers in a range 1-9")
+                              else:
+                                    self.sudokuTable.item(item.row(), item.column()).setTextAlignment(Qt.AlignHCenter|Qt.AlignVCenter)
+                                    self.sudokuObject.updateSudokuArray(item.row(), item.column(), int(item.text()))
+
+                                    if self.showErrors == True:
+                                          if self.sudokuObject.checkSpaceMainTable(int(item.text()), item.row(), item.column()) != True:
+                                                self.__setCellError(item.row(), item.column())
+                                          else:
+                                                self.__setCellNormal(item.row(), item.column())
+
+                        else:
                               self.sudokuTable.item(item.row(), item.column()).setText("")
                               self.sudokuObject.updateSudokuArray(item.row(), item.column(), 0)
                               self.showInformationDialog("You can only enter numbers in a range 1-9")
-                        else:
-                              self.sudokuTable.item(item.row(), item.column()).setTextAlignment(Qt.AlignHCenter|Qt.AlignVCenter)
-                              self.sudokuObject.updateSudokuArray(item.row(), item.column(), int(item.text()))
-                              # self.sudokuTable.item(item.row(), item.column()).setBackground(QtGui.QColor(255, 255, 255))
-                              
-
-                              if self.showErrors == True:
-                                    if self.sudokuObject.checkSpaceMainTable(int(item.text()), item.row(), item.column()) != True:
-                                          self.__setCellError(item.row(), item.column())
-                                    else:
-                                          self.__setCellNormal(item.row(), item.column())
-                                    
-
-
                   else:
-                        self.sudokuTable.item(item.row(), item.column()).setText("")
-                        self.sudokuObject.updateSudokuArray(item.row(), item.column(), 0)
-                        self.showInformationDialog("You can only enter numbers in a range 1-9")
-            else:
-                  if item.text() == str(self.basicSudokuArray[item.row(), item.column()]):
-                        return
+                        if item.text() == str(self.basicSudokuArray[item.row(), item.column()]):
+                              return
 
-                  self.showInformationDialog("You can not change this cell")
-                  self.sudokuTable.item(item.row(), item.column()).setText(str(self.basicSudokuArray[item.row(), item.column()]))
+                        self.showInformationDialog("You can not change this cell")
+                        self.sudokuTable.item(item.row(), item.column()).setText(str(self.basicSudokuArray[item.row(), item.column()]))
 
       def showInformationDialog(self, message):
             '''
-            Showing Informational Dialog with given message
+            Showing Informational Dialog with given message with QMessageBox
             '''
             msgBox = QMessageBox()
             msgBox.setIcon(QMessageBox.Information)
@@ -202,9 +243,3 @@ class SudokuMainWindow(QMainWindow):
             if returnValue == QMessageBox.Ok:
                   pass
 
-
-
-
-# app = QtWidgets.QApplication(sys.argv)
-# ui = SudokuMainWindow(1, "easy")
-# sys.exit(app.exec_())

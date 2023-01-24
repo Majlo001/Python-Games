@@ -78,7 +78,8 @@ class SudokuSolver(QMainWindow):
 
 
             else:
-                self.sudokuObject.solveSudoku()
+                #self.sudokuObject.solveSudoku()
+                self.sudokuObject.solveMainTable()
                 print(self.sudokuObject.getSudokuArray())
 
                 for row in range(len(self.sudokuArray)):
@@ -86,9 +87,6 @@ class SudokuSolver(QMainWindow):
                         self.sudokuTable.setItem(row, col, QTableWidgetItem(str(self.sudokuArray[row][col])))
                         self.sudokuTable.item(row, col).setTextAlignment(Qt.AlignHCenter|Qt.AlignVCenter)
                         self.sudokuTable.item(row, col).setBackground(QtGui.QColor(255, 255, 255))  
-                
-            
-            
     
     def sudokuCellChanged(self, item):
             '''

@@ -23,3 +23,6 @@ class Timer(QThread):
       
       def stopTimer(self):
             self.__isRunning = False
+      
+      def playTimer(self):
+            self.__isRunning = True

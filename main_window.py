@@ -1,15 +1,15 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import pyqtSignal, QObject, Qt, QThread
-from PyQt5.QtWidgets import QMainWindow, QDialog, QPushButton, QComboBox, QLabel, QTableWidget, QTableWidgetItem
-from PyQt5.QtGui import QIcon, QFont
+from PyQt5.QtCore import pyqtSignal, QObject
+from PyQt5.QtWidgets import QMainWindow, QDialog, QPushButton, QComboBox, QLabel, QCheckBox
+from PyQt5.QtGui import QIcon, QFont, QPixmap
 from PyQt5.uic import loadUi
 import sys
 
-import numpy as np
 import sudoku_main
+import sudoku_solver
 
 UI_PATH = 'ui_files\\'
-ICON_PATH = 'Sudoku\\media\\icons\\'
+IMAGES_PATH = 'images\\'
 #TODO:Wszystkie globalne do PythonSettings
 
 
@@ -27,11 +27,25 @@ class MainWindow(QMainWindow):
             #self.conncet4PlayButton = self.findChild(QPushButton, "conncet4PlayButton")
             self.difficultyComboBox = self.findChild(QComboBox, "difficultyComboBox")
             self.boardComboBox = self.findChild(QComboBox, "boardComboBox")
+            self.image1 = self.findChild(QLabel, "image1")
+            self.image2 = self.findChild(QLabel, "image2")
+            self.errorsCheckBox = self.findChild(QCheckBox, "errorsCheckBox")
+
+
+            # Set images
+            self.sudokuImage = QPixmap(IMAGES_PATH + "sudoku-game-2.png")
+            self.solverImage = QPixmap(IMAGES_PATH + "sudoku-solver-1.png")
+            self.image1.setPixmap(self.sudokuImage)
+            self.image2.setPixmap(self.solverImage)
+            self.image1.resize(self.sudokuImage.width(), self.sudokuImage.height())
+            self.image2.resize(self.solverImage.width(), self.solverImage.height())
+            self.image1.show()
+            self.image2.show()
 
 
             # Click buttons
             self.sudokuPlayButton.clicked.connect(self.playSudoku)
-            # self.checkButton.clicked.connect(self.checkSudokuTable)
+            self.sudkouTryButton.clicked.connect(self.solveSudoku)
 
             # Show The App
             self.show()
@@ -39,12 +53,17 @@ class MainWindow(QMainWindow):
     def playSudoku(self):
         difficulty = self.difficultyComboBox.currentText()
         board = self.boardComboBox.currentText()
+        showErrors = self.errorsCheckBox.isChecked()
         
-        isGenerate = 1
+        gMode = 1
         if board == "Load from file":
-            isGenerate = 2
+            gMode = 2
         
-        sudoku_main.SudokuMainWindow(isGenerate, difficulty.lower())
+        sudoku_main.SudokuMainWindow(gMode, difficulty.lower(), showErrors)
+    
+
+    def solveSudoku(self):
+        sudoku_solver.SudokuSolver()
 
 
 

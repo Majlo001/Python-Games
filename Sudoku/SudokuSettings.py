@@ -6,7 +6,7 @@ class SudokuSettings():
       ICON_PATH = 'Sudoku\\media\\icons\\'
 
       DIFFICULTY_DICT = {
-            "dev": (1, 2),
+            "dev": (3, 5),
             "easy": (36, 46),
             "normal": (46, 52),
             "hard": (52, 60)

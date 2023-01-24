@@ -17,8 +17,8 @@ class Sudoku():
                   self.basicSudokuArray = self.getSudokuFromFile(difficulty)
                   self.sudokuArray = np.copy(self.basicSudokuArray)
             else:
-                  #TODO: Solve and enter
-                  print("solve here")
+                  self.basicSudokuArray = np.zeros([9,9], dtype = int)
+                  self.sudokuArray = np.zeros([9,9], dtype = int)
 
       
       def getBasicSudokuArray(self):
@@ -35,7 +35,7 @@ class Sudoku():
 
       def updateSudokuArray(self, row, col, value):
             '''
-            Update main Sudoku Matrix.
+            Update main Sudoku Matrix with a given value.
             '''
             if not isinstance(value, (int)):
                   raise TypeError("Error: Cell value must be a number.")
@@ -132,6 +132,8 @@ class Sudoku():
 
             return False
 
+
+
       def checkSpace(self, num, row, col):
             '''
             Checks if we can enter a number in a given position in the matrix.
@@ -171,13 +173,13 @@ class Sudoku():
                         if temprow != row:
                               return False
 
-            modRow = row // 3
-            modCol = col // 3
+            modRow = (row // 3) * 3
+            modCol = (col // 3) * 3
 
-            for i in range(0, 3):
-                  for j in range(0, 3):
-                        if self.sudokuArray[i + (modRow * 3)][j + (modCol * 3)] == num:
-                              if temprow//3 != modRow and tempcol//3 != modCol:
+            for i in range(modRow, modRow+3):
+                  for j in range(modCol, modCol+3):
+                        if self.sudokuArray[i][j] == num:
+                              if i != row and j != col:
                                     return False
             
             return True
@@ -201,6 +203,27 @@ class Sudoku():
 
             return False
       
+      def generateRest(self):
+            '''
+            Generate rest of the matrix
+            '''
+            print(self.sudokuArray)
+            for row in range(len(self.sudokuArray)):
+                  for col in range(len(self.sudokuArray[row])):
+                        if self.sudokuArray[row][col] == 0:
+                              randNum = random.randint(1, 9)
+
+                              if self.checkSpaceMainTable(randNum, row, col):
+                                    print(row, col, randNum)
+                                    self.sudokuArray[row][col] = randNum
+                                    
+                                    if self.solveMainTable() == False:
+                                          print("False")
+                                          self.sudokuArray[row][col] = 0
+
+            print(self.sudokuArray)
+            return False
+
       def checkSudokuPosition(self, num, row, col):
             '''
             Checks if we can enter a number in a given position in the matrix.
@@ -219,7 +242,7 @@ class Sudoku():
       def checkSudokuPositionMainTable(self, num, row, col):
             '''
             Checks if we can enter a number in a given position in the main matrix.
-            Checks by row and column.
+            Checks by row, column, and square.
             '''
             for tempcol in range(len(self.sudokuArray)):
                   if self.sudokuArray[row][tempcol] == num and tempcol != col:
@@ -228,6 +251,15 @@ class Sudoku():
             for temprow in range(len(self.sudokuArray)):
                   if self.sudokuArray[temprow][col] == num and temprow != row:
                         return False
+            
+            row_start = (row // 3) * 3
+            col_start = (col // 3) * 3
+
+            for r in range(row_start, row_start + 3):
+                  for c in range(col_start, col_start + 3):
+                        if r != row and c != col:
+                              if self.sudokuArray[r][c] == num:
+                                    return False
             
             return True
 
@@ -242,6 +274,19 @@ class Sudoku():
             
             return True
 
+      def validateSudokuSolver(self):
+            '''
+            Validate the correctness of Sudoku matrix row by row, column by column.
+            '''
+            for row in range(len(self.sudokuArray)):
+                  for col in range(len(self.sudokuArray[row])):
+                        if self.sudokuArray[row][col] != 0:
+                              if self.checkSudokuPositionMainTable(self.sudokuArray[row][col], row, col) != True:
+                                    print(self.sudokuArray[row][col], row, col)
+                                    return False
+            
+            return True
+
       def getValidateErrors(self):
             '''
             Return position of errors in Sudoku matrix.
@@ -252,7 +297,8 @@ class Sudoku():
                   for col in range(len(self.sudokuArray[row])):
                         if self.checkSudokuPositionMainTable(self.sudokuArray[row][col], row, col) != True:
                               if self.basicSudokuArray[row][col] == 0:
-                                    errors.append((row, col))
+                                    if self.sudokuArray[row][col] != 0:
+                                          errors.append((row, col))
             
             return errors
 
@@ -268,3 +314,62 @@ class Sudoku():
             return False
 
 
+
+      def solveSudoku(self):
+            spacesAvailable = self.findEmptySpacesMainTable()
+            if spacesAvailable == False:
+                  return True
+
+            row, col = spacesAvailable
+
+            for num in range(1,10):
+                  if self.is_valid(num, row, col):
+                        self.sudokuArray[row][col] = num
+
+                        if self.solveSudoku():
+                              return True
+                  
+                  self.sudokuArray[row][col] = 0
+
+            return False
+
+
+      def solveMainTable(self): 
+            '''
+            Solves the matrix (use recursion)
+            '''
+            spacesAvailable = self.findEmptySpacesMainTable()
+            if spacesAvailable == False:
+                  return True
+            
+            row, col = spacesAvailable
+
+            for n in range(1, 10):
+                  if self.checkSpaceMainTable(n, row, col):
+                        self.basicSudokuArray[row][col] = n
+                        
+                        if self.solveMainTable():
+                              return True
+                        
+                        self.basicSudokuArray[row][col] = 0
+
+            return False
+
+      def is_valid(self, num, row, col):
+            row_vals = self.sudokuArray[row]
+            if num in row_vals:
+                  return False 
+            
+            col_vals = [self.sudokuArray[i][col] for i in range(9)]
+            if num in col_vals:
+                  return False
+
+            row_start = (row // 3) * 3
+            col_start = (col // 3) * 3
+
+            for r in range(row_start, row_start + 3):
+                  for c in range(col_start, col_start + 3):
+                        if self.sudokuArray[r][c] == num:
+                              return False
+
+            return True

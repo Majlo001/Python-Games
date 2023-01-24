@@ -17,10 +17,11 @@ ICON_PATH = 'Sudoku\\media\\icons\\'
 
 
 class SudokuMainWindow(QMainWindow):
-      def __init__(self, isGenerate, difficulty):
+      def __init__(self, isGenerate, difficulty, showErrors):
             super().__init__()
             self.difficulty = difficulty
             self.isGenerate = isGenerate
+            self.showErrors = showErrors
             
             # Load the ui file
             self.ui = loadUi(UI_PATH+"sudoku_game.ui", self)
@@ -124,6 +125,12 @@ class SudokuMainWindow(QMainWindow):
             '''
             self.sudokuTable.item(row, col).setBackground(QtGui.QColor(255, 0, 0))
 
+      def __setCellNormal(self, row, col):
+            '''
+            Setting white background in error cell
+            '''
+            self.sudokuTable.item(row, col).setBackground(QtGui.QColor(255, 255, 255))
+
       def __showSudokuDialog(self, errors):
             '''
             Showing Sudoku Dialog with check function result
@@ -148,6 +155,7 @@ class SudokuMainWindow(QMainWindow):
             if int(self.basicSudokuArray[item.row(), item.column()]) == 0:
                   if item.text() == "":
                         self.sudokuObject.updateSudokuArray(item.row(), item.column(), 0)
+                        self.__setCellNormal(item.row(), item.column())
                         return
 
                   if item.text().isdigit():
@@ -158,6 +166,17 @@ class SudokuMainWindow(QMainWindow):
                         else:
                               self.sudokuTable.item(item.row(), item.column()).setTextAlignment(Qt.AlignHCenter|Qt.AlignVCenter)
                               self.sudokuObject.updateSudokuArray(item.row(), item.column(), int(item.text()))
+                              # self.sudokuTable.item(item.row(), item.column()).setBackground(QtGui.QColor(255, 255, 255))
+                              
+
+                              if self.showErrors == True:
+                                    if self.sudokuObject.checkSpaceMainTable(int(item.text()), item.row(), item.column()) != True:
+                                          self.__setCellError(item.row(), item.column())
+                                    else:
+                                          self.__setCellNormal(item.row(), item.column())
+                                    
+
+
                   else:
                         self.sudokuTable.item(item.row(), item.column()).setText("")
                         self.sudokuObject.updateSudokuArray(item.row(), item.column(), 0)

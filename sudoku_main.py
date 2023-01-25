@@ -24,6 +24,7 @@ class SudokuMainWindow(QMainWindow):
             self.showErrors = showErrors
 
             self.__isPaused = False
+            self.__wasErrors = []
             
             # Load the ui file
             self.ui = loadUi(UI_PATH+"sudoku_game.ui", self)
@@ -76,12 +77,12 @@ class SudokuMainWindow(QMainWindow):
             Pausing game with hiding and showing numbers
             '''
             if self.__isPaused == True:
-                  self.__isPaused = False
                   self.difficultyLabel.setText(self.difficulty.upper())
                   self.pauseButton.setIcon(QIcon(ICON_PATH + "pause-button-60.png"))
                   self.pauseButton.setIconSize(QtCore.QSize(36,36))
                   self.timer.playTimer()
                   self.__showSudokuTable()
+                  self.__isPaused = False
             else:
                   self.__isPaused = True
                   self.difficultyLabel.setText("GAME PAUSED")
@@ -106,12 +107,19 @@ class SudokuMainWindow(QMainWindow):
             self.sudokuArray = self.sudokuObject.getSudokuArray()
             for row in range(len(self.sudokuArray)):
                   for col in range(len(self.sudokuArray[row])):
-                        self.sudokuTable.item(row, col).setText(str(self.sudokuArray[row][col]))
-                        self.__setCellNormal(row, col)
+                        if self.sudokuArray[row][col] != 0:
+                              self.sudokuTable.item(row, col).setText(str(self.sudokuArray[row][col]))
+                              self.__setCellNormal(row, col)
 
-                        if self.basicSudokuArray[row][col] != 0:
-                              self.sudokuTable.item(row, col).setBackground(QtGui.QColor(220,220,220))
-
+                              if self.basicSudokuArray[row][col] != 0:
+                                    self.sudokuTable.item(row, col).setBackground(QtGui.QColor(220,220,220))
+            
+            if self.showErrors == True:
+                  errors = self.sudokuObject.getValidateErrors()
+                  for i in range(len(errors)):
+                        row, col = errors[i]
+                        if self.basicSudokuArray[row, col] == 0:
+                              self.__setCellError(row, col)
 
       def closeEvent(self, event):
             self.timer.stopTimer()
@@ -140,9 +148,11 @@ class SudokuMainWindow(QMainWindow):
             '''
             Clearing sudoku Table after clicking a button
             '''
-            self.sudokuArray = np.copy(self.basicSudokuArray)
             self.sudokuObject.restartSudokuTable()
-            self.createSudokuTable()
+            self.__isPaused = True
+            self.__hideSudokuTable()
+            self.__showSudokuTable()
+            self.__isPaused = False
 
       def checkSudokuTable(self):
             '''
@@ -180,7 +190,7 @@ class SudokuMainWindow(QMainWindow):
             '''
             dialog = SudokuResultDialog(errors, self.timerLabel.text())
             if dialog.exec_() == QDialog.Accepted:
-                  SudokuMainWindow(self.isGenerate, self.difficulty)
+                  SudokuMainWindow(self.isGenerate, self.difficulty, self.showErrors)
                   self.close()
             else:
                   self.close()
@@ -212,12 +222,6 @@ class SudokuMainWindow(QMainWindow):
                                     self.sudokuTable.item(item.row(), item.column()).setTextAlignment(Qt.AlignHCenter|Qt.AlignVCenter)
                                     self.sudokuObject.updateSudokuArray(item.row(), item.column(), int(item.text()))
 
-                                    if self.showErrors == True:
-                                          if self.sudokuObject.checkSpaceMainTable(int(item.text()), item.row(), item.column()) != True:
-                                                self.__setCellError(item.row(), item.column())
-                                          else:
-                                                self.__setCellNormal(item.row(), item.column())
-
                         else:
                               self.sudokuTable.item(item.row(), item.column()).setText("")
                               self.sudokuObject.updateSudokuArray(item.row(), item.column(), 0)
@@ -228,6 +232,29 @@ class SudokuMainWindow(QMainWindow):
 
                         self.showInformationDialog("You can not change this cell")
                         self.sudokuTable.item(item.row(), item.column()).setText(str(self.basicSudokuArray[item.row(), item.column()]))
+
+            
+                  if self.showErrors == True:
+                        self.__realtimeValidate()
+
+      def __realtimeValidate(self):
+            '''
+            Realtime validation after cells change.
+            '''
+            errors = self.sudokuObject.getValidateErrors()
+
+            diffErrors = list(set(errors).symmetric_difference(set(self.__wasErrors)))
+            for i in range(len(diffErrors)):
+                  if diffErrors[i] not in errors:
+                        row, col = diffErrors[i]
+                        self.__setCellNormal(row, col)
+
+            for i in range(len(errors)):
+                  row, col = errors[i]
+                  if self.basicSudokuArray[row, col] == 0:
+                        self.__setCellError(row, col)
+            
+            self.__wasErrors = errors
 
       def showInformationDialog(self, message):
             '''

@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QDialog, QPushButton, QLabel, QVBoxLayout
 from PyQt5.QtGui import QFont
 
 class SudokuResultDialog(QDialog):
-    def __init__(self, errorCount, timerText):
+      def __init__(self, errorCount, timerText):
             super().__init__()
             self.setWindowTitle('Sudoku result')
             self.resize(200, 250)
@@ -10,6 +10,7 @@ class SudokuResultDialog(QDialog):
             self.label1 = QLabel("Sudoku ukończone!")
             self.label2 = QLabel()
             self.label3 = QLabel("Czas "+timerText)
+            self.button0 = QPushButton("Zapisz wynik do pliku")
             self.button1 = QPushButton("Nowa gra")
             self.button2 = QPushButton("Zakończ")
 
@@ -18,6 +19,7 @@ class SudokuResultDialog(QDialog):
             else:
                   self.label2.setText("Błędy: " + str(errorCount))
 
+            self.button0.clicked.connect(self.saveToFile)
             self.button1.clicked.connect(self.accept)
             self.button2.clicked.connect(self.reject)
 
@@ -29,6 +31,10 @@ class SudokuResultDialog(QDialog):
             self.layout.addWidget(self.label1)
             self.layout.addWidget(self.label2)
             self.layout.addWidget(self.label3)
+            self.layout.addWidget(self.button0)
             self.layout.addWidget(self.button1)
             self.layout.addWidget(self.button2)
             self.setLayout(self.layout)
+      
+      def saveToFile(self):
+            print("Save to file here!")

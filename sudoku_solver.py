@@ -78,7 +78,6 @@ class SudokuSolver(QMainWindow):
 
 
             else:
-                #self.sudokuObject.solveSudoku()
                 self.sudokuObject.solveMainTable()
                 print(self.sudokuObject.getSudokuArray())
 

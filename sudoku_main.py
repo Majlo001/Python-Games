@@ -13,7 +13,7 @@ from Sudoku.SudokuResultDialog import *
 
 UI_PATH = 'ui_files\\'
 ICON_PATH = 'Sudoku\\media\\icons\\'
-#TODO:Wszystkie globalne do PythonSettings
+
 
 
 class SudokuMainWindow(QMainWindow):
@@ -122,6 +122,9 @@ class SudokuMainWindow(QMainWindow):
                               self.__setCellError(row, col)
 
       def closeEvent(self, event):
+            '''
+            Remove timer on exit
+            '''
             self.timer.stopTimer()
             self.thread.exit()
             event.accept()
@@ -188,7 +191,8 @@ class SudokuMainWindow(QMainWindow):
             '''
             Showing Sudoku Dialog with check function result
             '''
-            dialog = SudokuResultDialog(errors, self.timerLabel.text())
+            self.sudokuArray = self.sudokuObject.getSudokuArray()
+            dialog = SudokuResultDialog(errors, self.timerLabel.text(), self.sudokuArray)
             if dialog.exec_() == QDialog.Accepted:
                   SudokuMainWindow(self.isGenerate, self.difficulty, self.showErrors)
                   self.close()
@@ -211,9 +215,8 @@ class SudokuMainWindow(QMainWindow):
                               self.sudokuTable.item(item.row(), item.column()).setText("")
                               self.sudokuObject.updateSudokuArray(item.row(), item.column(), 0)
                               self.__setCellNormal(item.row(), item.column())
-                              return
 
-                        if item.text().isdigit():
+                        elif item.text().isdigit():
                               if int(item.text()) > 9 or int(item.text()) < 1:
                                     self.sudokuTable.item(item.row(), item.column()).setText("")
                                     self.sudokuObject.updateSudokuArray(item.row(), item.column(), 0)
@@ -242,8 +245,8 @@ class SudokuMainWindow(QMainWindow):
             Realtime validation after cells change.
             '''
             errors = self.sudokuObject.getValidateErrors()
-
             diffErrors = list(set(errors).symmetric_difference(set(self.__wasErrors)))
+            
             for i in range(len(diffErrors)):
                   if diffErrors[i] not in errors:
                         row, col = diffErrors[i]

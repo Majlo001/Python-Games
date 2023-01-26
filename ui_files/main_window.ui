@@ -202,11 +202,6 @@
            </property>
            <item>
             <property name="text">
-             <string>Dev</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
              <string>Easy</string>
             </property>
            </item>
@@ -218,6 +213,11 @@
            <item>
             <property name="text">
              <string>Hard</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Dev</string>
             </property>
            </item>
           </widget>

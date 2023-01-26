@@ -13,12 +13,12 @@ from Sudoku.SudokuResultDialog import *
 
 UI_PATH = 'ui_files\\'
 ICON_PATH = 'Sudoku\\media\\icons\\'
-#TODO:Wszystkie globalne do PythonSettings
 
 
 class SudokuSolver(QMainWindow):
     def __init__(self):
             super().__init__()
+            self.__isSolved = False
             
             # Load the ui file
             self.ui = loadUi(UI_PATH+"sudoku_solver.ui", self)
@@ -58,6 +58,10 @@ class SudokuSolver(QMainWindow):
             '''
             Clearing sudoku Table after clicking a button
             '''
+            if self.__isSolved == True:
+                self.solveButton.setText("Try")
+                self.__isSolved = False
+            
             self.sudokuObject.restartSudokuTable()
             self.sudokuArray = self.sudokuObject.getSudokuArray()
             self.createSudokuTable()
@@ -66,26 +70,31 @@ class SudokuSolver(QMainWindow):
             '''
             Solving sudoku Table after clicking a button and write solve into table
             '''
-            print("solving...")
-            if self.sudokuObject.validateSudokuSolver() != True:
-                errors = self.sudokuObject.getValidateErrors()
-
-                for i in range(len(errors)):
-                    row, col = errors[i]
-                    self.sudokuTable.item(row, col).setBackground(QtGui.QColor(255, 0, 0))
-                
-                self.showInformationDialog("Given Array have errors!")
-
+            if self.__isSolved == True:
+                self.saveToFile()
 
             else:
-                self.sudokuObject.solveMainTable()
-                print(self.sudokuObject.getSudokuArray())
+                if self.sudokuObject.validateSudokuSolver() != True:
+                    errors = self.sudokuObject.getValidateErrors()
 
-                for row in range(len(self.sudokuArray)):
-                    for col in range(len(self.sudokuArray[row])):
-                        self.sudokuTable.setItem(row, col, QTableWidgetItem(str(self.sudokuArray[row][col])))
-                        self.sudokuTable.item(row, col).setTextAlignment(Qt.AlignHCenter|Qt.AlignVCenter)
-                        self.sudokuTable.item(row, col).setBackground(QtGui.QColor(255, 255, 255))  
+                    for i in range(len(errors)):
+                        row, col = errors[i]
+                        self.sudokuTable.item(row, col).setBackground(QtGui.QColor(255, 0, 0))
+                    
+                    self.showInformationDialog("Given Array have errors!")
+
+
+                else:
+                    self.sudokuObject.solveMainTable()
+                    self.sudokuArray = self.sudokuObject.getSudokuArray()
+                    self.__isSolved = True
+                    self.solveButton.setText("Save to file")
+
+                    for row in range(len(self.sudokuArray)):
+                        for col in range(len(self.sudokuArray[row])):
+                            self.sudokuTable.setItem(row, col, QTableWidgetItem(str(self.sudokuArray[row][col])))
+                            self.sudokuTable.item(row, col).setTextAlignment(Qt.AlignHCenter|Qt.AlignVCenter)
+                            self.sudokuTable.item(row, col).setBackground(QtGui.QColor(255, 255, 255))
     
     def sudokuCellChanged(self, item):
             '''
@@ -120,4 +129,15 @@ class SudokuSolver(QMainWindow):
 
             returnValue = msgBox.exec()
             if returnValue == QMessageBox.Ok:
-                  pass
+                pass
+    
+    def saveToFile(self):
+        '''
+        Open dialog and save Solved Sudoku to the specified file
+        '''
+        name = QFileDialog.getSaveFileName(self,"QFileDialog.getSaveFileName()","","Text Files (*.txt)")
+        fileName = name[0]
+        file = open(fileName, 'w+', encoding='utf8')
+        text = str(self.sudokuArray)
+        file.write(text)
+        file.close()

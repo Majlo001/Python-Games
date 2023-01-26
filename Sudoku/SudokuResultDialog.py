@@ -1,9 +1,10 @@
-from PyQt5.QtWidgets import QDialog, QPushButton, QLabel, QVBoxLayout
+from PyQt5.QtWidgets import QDialog, QPushButton, QLabel, QVBoxLayout, QFileDialog
 from PyQt5.QtGui import QFont
 
 class SudokuResultDialog(QDialog):
-      def __init__(self, errorCount, timerText):
+      def __init__(self, errorCount, timerText, sudokuArray):
             super().__init__()
+            self.sudokuArray = sudokuArray
             self.setWindowTitle('Sudoku result')
             self.resize(200, 250)
             self.layout = QVBoxLayout()
@@ -37,4 +38,14 @@ class SudokuResultDialog(QDialog):
             self.setLayout(self.layout)
       
       def saveToFile(self):
-            print("Save to file here!")
+            '''
+            Open dialog and save result with Sudoku to the specified file
+            '''
+            name = QFileDialog.getSaveFileName(self,"QFileDialog.getSaveFileName()","","Text Files (*.txt)")
+            fileName = name[0]
+            file = open(fileName, 'w+', encoding='utf8')
+            text = self.label2.text() + "\n"
+            text += self.label3.text() + "\n\n"
+            text += str(self.sudokuArray)
+            file.write(text)
+            file.close()

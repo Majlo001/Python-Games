@@ -1,6 +1,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import pyqtSignal, QObject, Qt, QThread
-from PyQt5.QtWidgets import QMainWindow, QDialog, QPushButton, QMessageBox, QLabel, QTableWidget, QTableWidgetItem
+from PyQt5.QtWidgets import QMainWindow, QPushButton, QMessageBox, QTableWidget, QTableWidgetItem
 from PyQt5.QtGui import QIcon, QFont
 from PyQt5.uic import loadUi
 import sys
@@ -59,7 +59,7 @@ class SudokuSolver(QMainWindow):
             Clearing sudoku Table after clicking a button
             '''
             if self.__isSolved == True:
-                self.solveButton.setText("Try")
+                self.solveButton.setText("Solve")
                 self.__isSolved = False
             
             self.sudokuObject.restartSudokuTable()
@@ -137,7 +137,8 @@ class SudokuSolver(QMainWindow):
         '''
         name = QFileDialog.getSaveFileName(self,"QFileDialog.getSaveFileName()","","Text Files (*.txt)")
         fileName = name[0]
-        file = open(fileName, 'w+', encoding='utf8')
-        text = str(self.sudokuArray)
-        file.write(text)
-        file.close()
+        if fileName != "":
+            file = open(fileName, 'w+', encoding='utf8')
+            text = str(self.sudokuArray)
+            file.write(text)
+            file.close()

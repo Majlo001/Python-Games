@@ -1,5 +1,5 @@
 from PyQt5 import QtCore
-from PyQt5.QtCore import pyqtSignal, QObject, QTimer, QTime, QThread
+from PyQt5.QtCore import pyqtSignal, QTimer, QTime, QThread
 
 
 class Timer(QThread):
@@ -17,7 +17,6 @@ class Timer(QThread):
       def timerEvent(self):
             if self.__isRunning == True:
                   self.time = self.time.addSecs(1)
-                  #print(self.time.toString("hh:mm:ss"))
                   self.timerSignal.emit(self.time.toString("hh:mm:ss"))
       
       

@@ -206,7 +206,7 @@ class Sudoku():
 
 
 
-      def checkSpaceMainTable(self, num, row, col):   # WHATS THIS?
+      def checkSpaceMainTable(self, num, row, col):
             '''
             Checks if we can enter a number into a given position in main matrix.
             '''
@@ -233,7 +233,7 @@ class Sudoku():
 
       def validateSudoku(self):
             '''
-            Validate the correctness of Sudoku matrix row by row, column by column.
+            Validate the correctness of main Sudoku matrix row by row, column by column.
             '''
             for row in range(len(self.sudokuArray)):
                   for col in range(len(self.sudokuArray[row])):
@@ -244,7 +244,7 @@ class Sudoku():
 
       def getValidateErrors(self):
             '''
-            Return position of errors in Sudoku matrix.
+            Return position of errors in main Sudoku matrix.
             '''
             errors = []
             
